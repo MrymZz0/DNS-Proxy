@@ -1,6 +1,7 @@
 import os
 import re
 import struct
+import time
 from collections import namedtuple
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -190,3 +191,7 @@ class DnsProxy:
         self.ad_set, self.sanction_set = ads, sanc
         for w in w1 + w2:
             out(w)
+
+    @staticmethod
+    def _remaining(entry):
+        return entry[1] - int(time.monotonic() - entry[2])
