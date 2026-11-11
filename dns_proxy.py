@@ -176,3 +176,11 @@ def parse_dns_response(data):
     if flags & 0x0200 and an == 0:
         raise ValueError("truncated response")
     return ("NOT_FOUND",)
+
+class DnsProxy:
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.ad_set, self.sanction_set = set(), set()
+        self.cache = {}
+        self.stats = {"Total": 0, "AD_BLOCK": 0, "SANCTION": 0,
+                      "CACHE": 0, "UPSTREAM": 0, "ERRORS": 0}
