@@ -195,3 +195,13 @@ class DnsProxy:
     @staticmethod
     def _remaining(entry):
         return entry[1] - int(time.monotonic() - entry[2])
+
+    def cache_get(self, name):
+        entry = self.cache.get(name)
+        if entry is None:
+            return None
+        rem = self._remaining(entry)
+        if rem >= 1:
+            return entry[0], rem
+        del self.cache[name]                                 # expired
+        return None
