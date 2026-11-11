@@ -16,3 +16,10 @@ UINT_RE = re.compile(r"[0-9]+")
 
 class ConfigError(Exception):
     pass
+
+def out(text=""):
+    print(text, flush=True)
+
+def is_ipv4(s):
+    m = IPV4_RE.fullmatch(s)
+    return bool(m) and all(0 <= int(g) <= 255 for g in m.groups())
