@@ -51,3 +51,8 @@ def _parse_uint(key, value, minimum=0, maximum=None):
     if n < minimum or (maximum is not None and n > maximum):
         raise ConfigError(f"'{key}' out of range (got '{value}')")
     return n
+
+def _parse_ip(key, value):
+    if not is_ipv4(value):
+        raise ConfigError(f"'{key}' must be an IPv4 address (got '{value}')")
+    return value
