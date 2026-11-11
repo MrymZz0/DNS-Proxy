@@ -37,8 +37,17 @@ def in_list(name, entries):
         if ".".join(labels[i:]) in entries:
             return True
     return False
+
 def _parse_bool(key, value):
     v = value.lower()
     if v not in ("true", "false"):
         raise ConfigError(f"'{key}' must be true or false (got '{value}')")
     return v == "true"
+
+def _parse_uint(key, value, minimum=0, maximum=None):
+    if not UINT_RE.fullmatch(value):
+        raise ConfigError(f"'{key}' must be an integer (got '{value}')")
+    n = int(value)
+    if n < minimum or (maximum is not None and n > maximum):
+        raise ConfigError(f"'{key}' out of range (got '{value}')")
+    return n
