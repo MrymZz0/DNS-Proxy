@@ -30,3 +30,10 @@ def is_valid_domain(s):
 def normalize(name):
     name = name.lower()
     return name[:-1] if name.endswith(".") else name
+
+def in_list(name, entries):
+    labels = name.split(".")
+    for i in range(len(labels)):
+        if ".".join(labels[i:]) in entries:
+            return True
+    return False
