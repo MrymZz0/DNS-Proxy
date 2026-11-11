@@ -23,3 +23,6 @@ def out(text=""):
 def is_ipv4(s):
     m = IPV4_RE.fullmatch(s)
     return bool(m) and all(0 <= int(g) <= 255 for g in m.groups())
+
+def is_valid_domain(s):
+    return DOMAIN_RE.fullmatch(s) is not None
