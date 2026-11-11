@@ -297,3 +297,12 @@ class DnsProxy:
                     r.status, r.ip or "-", "-" if r.ttl is None else str(r.ttl)]) + "\n")
         except OSError:
             pass
+
+    @staticmethod
+    def print_result(r):
+        out(f"Domain : {r.domain}")
+        out(f"Source : {r.source}")
+        out(f"Status : {r.status}")
+        out(f"IP : {r.ip or '-'}")
+        out(f"TTL : {'-' if r.ttl is None else r.ttl}")
+        out()
