@@ -319,3 +319,12 @@ class DnsProxy:
             out(f"Error: {e}; keeping the old lists.")
             return
         out("Lists reloaded.")
+
+    def cmd_cache(self):
+        for name in [n for n, e in self.cache.items() if self._remaining(e) < 1]:
+            del self.cache[name]
+        if not self.cache:
+            out("Cache is empty.")
+            return
+        for name, e in self.cache.items():
+            out(f"{name} | {e[0]} | {self._remaining(e)}")
