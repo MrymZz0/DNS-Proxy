@@ -37,3 +37,8 @@ def in_list(name, entries):
         if ".".join(labels[i:]) in entries:
             return True
     return False
+def _parse_bool(key, value):
+    v = value.lower()
+    if v not in ("true", "false"):
+        raise ConfigError(f"'{key}' must be true or false (got '{value}')")
+    return v == "true"
