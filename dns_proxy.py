@@ -136,3 +136,14 @@ def build_dns_query(name, qid):
             raise ValueError("bad label length")
         msg += bytes([len(b)]) + b
     return msg + b"\x00" + struct.pack(">HH", 1, 1)
+
+def _skip_name(data, off):
+    while True:
+        if off >= len(data):
+            raise ValueError("truncated name")
+        length = data[off]
+        if length == 0:
+            return off + 1
+        if length & 0xC0 == 0xC0:
+            return off + 2
+        off += 1 + length
