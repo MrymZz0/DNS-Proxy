@@ -311,3 +311,11 @@ class DnsProxy:
         s = self.stats
         out(f"Total: {s['Total']} | AD_BLOCK: {s['AD_BLOCK']} | SANCTION: {s['SANCTION']} | "
             f"CACHE: {s['CACHE']} | UPSTREAM: {s['UPSTREAM']} | ERRORS: {s['ERRORS']}")
+
+    def cmd_reload(self):
+        try:
+            self.load_lists()
+        except ConfigError as e:
+            out(f"Error: {e}; keeping the old lists.")
+            return
+        out("Lists reloaded.")
