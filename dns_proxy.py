@@ -205,3 +205,11 @@ class DnsProxy:
             return entry[0], rem
         del self.cache[name]                                 # expired
         return None
+
+    def cache_put(self, name, ip, ttl):
+        self.cache.pop(name, None)
+        limit = self.cfg["entries_max_cache"]
+        if limit:
+            while len(self.cache) >= limit:
+                self.cache.pop(next(iter(self.cache)))       # evict oldest
+        self.cache[name] = (ip, ttl, time.monotonic())
