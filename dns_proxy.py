@@ -1,5 +1,6 @@
 import os
 import re
+import socket
 import struct
 import time
 from collections import namedtuple
@@ -203,7 +204,7 @@ class DnsProxy:
         rem = self._remaining(entry)
         if rem >= 1:
             return entry[0], rem
-        del self.cache[name]                                 # expired
+        del self.cache[name]
         return None
 
     def cache_put(self, name, ip, ttl):
@@ -211,5 +212,27 @@ class DnsProxy:
         limit = self.cfg["entries_max_cache"]
         if limit:
             while len(self.cache) >= limit:
-                self.cache.pop(next(iter(self.cache)))       # evict oldest
+                self.cache.pop(next(iter(self.cache)))
         self.cache[name] = (ip, ttl, time.monotonic())
+
+    def query_upstream(self, name):
+        addr = (self.cfg["upstream_ip"], self.cfg["upstream_port"])
+        timeout = self.cfg["upstream_timeout_sec"]
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            if self.cfg["dns_real"]:
+                return self._query_real(sock, name, addr, timeout)
+            sock.settimeout(timeout)
+            sock.sendto(f"QUERY {name}".encode("utf-8"), addr)
+            data, _ = sock.recvfrom(4096)
+            parts = data.decode("utf-8").split()
+        except (OSError, UnicodeDecodeError, ValueError, struct.error):
+            return ("SERVER_ERROR",)
+        finally:
+            sock.close()
+        if parts == ["NOT_FOUND"]:
+            return ("NOT_FOUND",)
+        if (len(parts) == 3 and parts[0] == "OK" and is_ipv4(parts[1])
+                and UINT_RE.fullmatch(parts[2])):
+            return ("OK", parts[1], int(parts[2]))
+        return ("SERVER_ERROR",)
