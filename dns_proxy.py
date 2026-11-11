@@ -4,6 +4,7 @@ import random
 import re
 import socket
 import struct
+import sys
 import time
 from collections import namedtuple
 
@@ -348,3 +349,18 @@ class DnsProxy:
             result = self.resolve(line)
             self.record(result)
             self.print_result(result)
+
+def main():
+    try:
+        cfg = load_config()
+        proxy = DnsProxy(cfg)
+        proxy.load_lists()
+    except ConfigError as e:
+        out(f"Config error: {e}")
+        return 1
+    proxy.run()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
