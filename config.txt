@@ -1,0 +1,9 @@
+upstream_ip=127.0.0.1
+upstream_port=5354
+upstream_timeout_sec=2
+sinkhole_ip=0.0.0.0
+proxy_ip=192.0.2.10
+local_ttl=60
+ad_list_file=ad_list.txt
+sanction_list_file=sanction_list.txt
+cache_enabled=true
