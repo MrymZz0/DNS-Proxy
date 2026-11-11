@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import socket
 import struct
@@ -236,3 +237,19 @@ class DnsProxy:
                 and UINT_RE.fullmatch(parts[2])):
             return ("OK", parts[1], int(parts[2]))
         return ("SERVER_ERROR",)
+
+    @staticmethod
+    def _query_real(sock, name, addr, timeout):
+        qid = random.randint(0, 0xFFFF)
+        sock.sendto(build_dns_query(name, qid), addr)
+        deadline = time.monotonic() + timeout
+        while True:
+            left = deadline - time.monotonic()
+            if left <= 0:
+                raise socket.timeout()
+            sock.settimeout(left)
+            data, _ = sock.recvfrom(4096)
+            if len(data) >= 2 and struct.unpack(">H", data[:2])[0] == qid:
+                break
+        return parse_dns_response(data)
+
