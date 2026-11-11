@@ -106,3 +106,24 @@ def load_config():
     }
     return cfg
 
+def load_list(path_str):
+    path = path_str if os.path.isabs(path_str) else os.path.join(BASE_DIR, path_str)
+    try:
+        with open(path, encoding="utf-8-sig", errors="replace") as f:
+            lines = f.read().splitlines()
+    except FileNotFoundError:
+        raise ConfigError(f"list file not found: {path_str}")
+    except OSError as e:
+        raise ConfigError(f"cannot read list file {path_str}: {e}")
+
+    entries, warnings = set(), []
+    for n, line in enumerate(lines, 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if is_valid_domain(line):
+            entries.add(normalize(line))
+        else:
+            warnings.append(f"Warning: bad line {n} in {path_str}: {line}")
+    return entries, warnings
+
