@@ -1,3 +1,4 @@
+import datetime
 import os
 import random
 import re
@@ -280,3 +281,19 @@ class DnsProxy:
         if reply[0] == "NOT_FOUND":
             return Result(name, "UPSTREAM", "NOT_FOUND", None, None)
         return Result(name, "UPSTREAM", "SERVER_ERROR", None, None)
+    def record(self, r):
+        s = self.stats
+        s["Total"] += 1
+        if r.source in ("AD_BLOCK", "SANCTION", "CACHE"):
+            s[r.source] += 1
+        if r.source == "UPSTREAM" and r.status in ("OK", "NOT_FOUND"):
+            s["UPSTREAM"] += 1
+        if r.status in ("SERVER_ERROR", "INVALID_INPUT"):
+            s["ERRORS"] += 1
+        try:
+            with open(os.path.join(BASE_DIR, LOG_FILE), "a", encoding="utf-8") as f:
+                f.write(" | ".join([
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"), r.domain, r.source,
+                    r.status, r.ip or "-", "-" if r.ttl is None else str(r.ttl)]) + "\n")
+        except OSError:
+            pass
