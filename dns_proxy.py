@@ -147,3 +147,32 @@ def _skip_name(data, off):
         if length & 0xC0 == 0xC0:
             return off + 2
         off += 1 + length
+
+def parse_dns_response(data):
+    if len(data) < 12:
+        raise ValueError("short packet")
+    _, flags, qd, an, _, _ = struct.unpack(">HHHHHH", data[:12])
+    if not flags & 0x8000:
+        raise ValueError("not a response")
+    rcode = flags & 0x0F
+    if rcode == 3:
+        return ("NOT_FOUND",)
+    if rcode != 0:
+        raise ValueError(f"rcode {rcode}")
+    off = 12
+    for _ in range(qd):
+        off = _skip_name(data, off) + 4
+    for _ in range(an):
+        off = _skip_name(data, off)
+        if off + 10 > len(data):
+            raise ValueError("truncated record")
+        rtype, rclass, ttl, rdlen = struct.unpack(">HHIH", data[off:off + 10])
+        off += 10
+        if off + rdlen > len(data):
+            raise ValueError("truncated rdata")
+        if rtype == 1 and rclass == 1 and rdlen == 4:
+            return ("OK", ".".join(str(b) for b in data[off:off + 4]), ttl)
+        off += rdlen
+    if flags & 0x0200 and an == 0:
+        raise ValueError("truncated response")
+    return ("NOT_FOUND",)
