@@ -184,3 +184,9 @@ class DnsProxy:
         self.cache = {}
         self.stats = {"Total": 0, "AD_BLOCK": 0, "SANCTION": 0,
                       "CACHE": 0, "UPSTREAM": 0, "ERRORS": 0}
+    def load_lists(self):
+        ads, w1 = load_list(self.cfg["ad_list_file"])
+        sanc, w2 = load_list(self.cfg["sanction_list_file"])
+        self.ad_set, self.sanction_set = ads, sanc
+        for w in w1 + w2:
+            out(w)
