@@ -306,3 +306,8 @@ class DnsProxy:
         out(f"IP : {r.ip or '-'}")
         out(f"TTL : {'-' if r.ttl is None else r.ttl}")
         out()
+
+    def cmd_stats(self):
+        s = self.stats
+        out(f"Total: {s['Total']} | AD_BLOCK: {s['AD_BLOCK']} | SANCTION: {s['SANCTION']} | "
+            f"CACHE: {s['CACHE']} | UPSTREAM: {s['UPSTREAM']} | ERRORS: {s['ERRORS']}")
