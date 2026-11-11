@@ -328,3 +328,23 @@ class DnsProxy:
             return
         for name, e in self.cache.items():
             out(f"{name} | {e[0]} | {self._remaining(e)}")
+
+    def run(self):
+        out("DNS Proxy ready.")
+        commands = {"stats": self.cmd_stats, "reload": self.cmd_reload, "cache": self.cmd_cache}
+        while True:
+            try:
+                line = input(PROMPT)
+            except (EOFError, KeyboardInterrupt):
+                out("\nBye.")
+                return
+            text = line.strip()
+            if text.lower() == "exit":
+                out("Bye.")
+                return
+            if text.lower() in commands:
+                commands[text.lower()]()
+                continue
+            result = self.resolve(line)
+            self.record(result)
+            self.print_result(result)
