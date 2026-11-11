@@ -26,3 +26,7 @@ def is_ipv4(s):
 
 def is_valid_domain(s):
     return DOMAIN_RE.fullmatch(s) is not None
+
+def normalize(name):
+    name = name.lower()
+    return name[:-1] if name.endswith(".") else name
