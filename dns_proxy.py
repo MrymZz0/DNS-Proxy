@@ -1,5 +1,6 @@
 import os
 import re
+import struct
 from collections import namedtuple
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -127,3 +128,11 @@ def load_list(path_str):
             warnings.append(f"Warning: bad line {n} in {path_str}: {line}")
     return entries, warnings
 
+def build_dns_query(name, qid):
+    msg = struct.pack(">HHHHHH", qid, 0x0100, 1, 0, 0, 0)
+    for label in name.split("."):
+        b = label.encode("ascii")
+        if not 1 <= len(b) <= 63:
+            raise ValueError("bad label length")
+        msg += bytes([len(b)]) + b
+    return msg + b"\x00" + struct.pack(">HH", 1, 1)
