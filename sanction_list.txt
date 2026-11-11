@@ -1,0 +1,2 @@
+service.example.org
+both.example.com
