@@ -252,4 +252,31 @@ class DnsProxy:
             if len(data) >= 2 and struct.unpack(">H", data[:2])[0] == qid:
                 break
         return parse_dns_response(data)
+    def resolve(self, line):
+        text = line.strip()
+        if not text:
+            return Result("(empty)", "NONE", "INVALID_INPUT", None, None)
+        if not is_valid_domain(text):
+            return Result(text, "NONE", "INVALID_INPUT", None, None)
 
+        name = normalize(text)
+        ttl = self.cfg["local_ttl"]
+        if in_list(name, self.ad_set):
+            return Result(name, "AD_BLOCK", "OK", self.cfg["sinkhole_ip"], ttl)
+        if in_list(name, self.sanction_set):
+            return Result(name, "SANCTION", "OK", self.cfg["proxy_ip"], ttl)
+
+        if self.cfg["cache_enabled"]:
+            hit = self.cache_get(name)
+            if hit:
+                return Result(name, "CACHE", "OK", hit[0], hit[1])
+
+        reply = self.query_upstream(name)
+        if reply[0] == "OK":
+            _, ip, up_ttl = reply
+            if self.cfg["cache_enabled"] and up_ttl > 0:
+                self.cache_put(name, ip, up_ttl)
+            return Result(name, "UPSTREAM", "OK", ip, up_ttl)
+        if reply[0] == "NOT_FOUND":
+            return Result(name, "UPSTREAM", "NOT_FOUND", None, None)
+        return Result(name, "UPSTREAM", "SERVER_ERROR", None, None)
